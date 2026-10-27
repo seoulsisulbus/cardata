@@ -2,106 +2,625 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>배차 관리 통합 시스템</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강사 타임수</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --bg-color: #f8f9fa;
+            --border-color: #dadce0;
+            --weekend-bg: #fce8e6;
+            --weekend-text: #c5221f;
+            --saturday-bg: #e8f0fe;
+            --saturday-text: #1967d2;
+            --empty-bg: #e8eaed;
+        }
+
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #202124;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin: 0;
+            color: #1a73e8;
+            font-weight: 800;
+        }
+
+        .month-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f1f3f4;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 22px;
+            color: #202124;
+        }
+
+        .month-selector button {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            width: 38px;
+            height: 38px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .month-selector button:hover { background-color: #e8eaed; }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: #1557b0; }
+
+        .btn-secondary { background-color: #f1f3f4; color: #3c4043; }
+        .btn-secondary:hover { background-color: #e8eaed; }
+
+        .btn-print { background-color: #34a853; color: white; }
+        .btn-print:hover { background-color: #2b8c44; }
+
+        .btn-add { background-color: #9334e6; color: white; padding: 6px 14px; font-size: 13px; border-radius: 4px; }
+        .btn-add:hover { background-color: #7c26cc; }
+
+        .btn-del-group { background-color: #ea4335; color: white; padding: 6px 14px; font-size: 13px; border-radius: 4px; }
+        .btn-del-group:hover { background-color: #c5221f; }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 15px;
+            white-space: nowrap;
+        }
+
+        .date-col {
+            background-color: #f1f3f4;
+            font-weight: 700;
+            font-size: 15px;
+            width: 80px;
+            min-width: 80px;
+            max-width: 80px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th:not(.date-col), td:not(:first-child) {
+            width: 55px; 
+            max-width: 55px;
+            min-width: 55px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        thead th:not(.date-col) {
+            font-size: 15px !important;
+            font-weight: 800 !important;
+            color: #1a73e8;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 0 !important;
+            height: 38px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 700;
+            color: #3c4043;
+            height: 42px;
+            text-align: center;
+            vertical-align: middle;
+            padding: 5px !important;
+        }
+
+        .sunday {
+            background-color: var(--weekend-bg);
+            color: var(--weekend-text);
+        }
+
+        .saturday {
+            background-color: var(--saturday-bg);
+            color: var(--saturday-text);
+        }
+
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        td input[type="number"], td input[type="text"] {
+            width: 100%;
+            height: 100%;
+            border: none;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 15px;
+            outline: none;
+            box-sizing: border-box;
+            background-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        td input[type="number"]:focus, td input[type="text"]:focus {
+            background-color: #e8f0fe !important;
+        }
+
+        .is-empty {
+            background-color: var(--empty-bg) !important;
+        }
+
+        .summary-row { font-weight: bold; background-color: #fff9c4; font-size: 15px; height: 38px; text-align: center; }
+        .wage-row { background-color: #f1f3f4; height: 38px; text-align: center; }
+        .total-pay-row { background-color: #e6f4ea; color: #137333; font-weight: bold; font-size: 15px; height: 38px; text-align: center; }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0 8px 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3c4043;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .section-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        @media print {
+            @page {
+                size: portrait;
+                margin: 4mm;
+            }
+            body { 
+                background: white; 
+                padding: 0; 
+                zoom: 70%; 
+            }
+            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            header .actions, .month-selector button, .no-print, .section-btns, p { display: none !important; }
+            .month-selector { background: none; border: none; font-size: 24px; padding: 0; }
+            header { margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 8px; }
+            table { width: 100%; text-align: center; vertical-align: middle; }
+            th, td { text-align: center; vertical-align: middle; }
+            .is-empty { background-color: #e8eaed !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .sunday { background-color: #fce8e6 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .saturday { background-color: #e8f0fe !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .summary-row { background-color: #fff9c4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .total-pay-row { background-color: #e6f4ea !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+
+    <!-- Firebase SDK (CDN 방식) 로드 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAC-4qsyKMuGp6o583agoFructJKiX67Oo",
+            authDomain: "carpro-97259.firebaseapp.com",
+            projectId: "carpro-97259",
+            storageBucket: "carpro-97259.firebasestorage.app",
+            messagingSenderId: "565637957634",
+            appId: "1:565637957634:web:dca9222b84f1d9955e3f1b",
+            measurementId: "G-JWL5TQWCB2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 전역으로 함수 연결
+        window.firebaseDb = db;
+        window.firebaseDeps = { doc, getDoc, setDoc };
+        window.dispatchEvent(new Event('firebase-ready'));
+    </script>
 </head>
-<body style="background: #fdfdfd; margin: 0; padding: 20px;">
+<body>
 
-    <!-- 🔒 로그인 화면 (배차판 대문) -->
-    <div id="loginView" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh;">
-        <div style="background:white; padding:40px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.1); width:100%; max-width:350px; text-align:center;">
-            <h2 style="margin-top:0; color:#333; font-size:24px;">통합 시스템 로그인</h2>
-            <p style="color:#666; font-size:14px; margin-bottom:20px;">배차판 및 운행일지 접속</p>
-
-            <div id="loginBox">
-                <input type="text" id="loginName" placeholder="이름 (예: 박기준)" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px; font-weight:bold; box-sizing:border-box;">
-                <input type="password" id="loginPwd" placeholder="비밀번호" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:10px; font-weight:bold; box-sizing:border-box;" onkeypress="if(event.key==='Enter') handleLogin()">
-                <button onclick="handleLogin()" style="width:100%; padding:14px; background:#4CAF50; color:white; border:none; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;">입장하기</button>
-                <p style="margin-top:20px; font-size:13px; color:#1976d2; cursor:pointer; font-weight:bold;" onclick="toggleAuth(true)">회원가입 (처음 오신 분)</p>
-            </div>
-
-            <div id="signupBox" style="display:none;">
-                <p style="color:#d32f2f; font-size:12px; font-weight:bold; margin-bottom:15px;">지정된 운전원만 가입 가능합니다.</p>
-                <input type="text" id="signupName" placeholder="본인 이름" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px; font-weight:bold; box-sizing:border-box;">
-                <input type="password" id="signupPwd" placeholder="새 비밀번호 (6자리 이상)" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px; font-weight:bold; box-sizing:border-box;">
-                <input type="password" id="signupPwdConfirm" placeholder="비밀번호 확인" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:10px; font-weight:bold; box-sizing:border-box;">
-                <button onclick="handleSignup()" style="width:100%; padding:14px; background:#333; color:white; border:none; border-radius:10px; font-weight:bold; font-size:16px; cursor:pointer;">가입 완료</button>
-                <p style="margin-top:20px; font-size:13px; color:#666; cursor:pointer; font-weight:bold;" onclick="toggleAuth(false)">뒤로 가기</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- 🚌 메인 배차판 화면 (로그인 성공 시 나타남) -->
-    <div id="mainApp" style="display:none;">
-        <div class="header-area">
-            <h1>월간 배차 관리 <span style="font-size:14px; color:#1976d2;" id="welcomeUserName"></span></h1>
-            <div>
-                <button class="btn-setting" style="background:#2196F3; margin-right:5px;" onclick="goToDrivingLog()">📝 내 운행일지 가기</button>
-                <button class="btn-setting hidden" id="adminSettingBtn" onclick="openDriverModal()" style="margin-right:5px;">⚙️ 운전원 설정</button>
-                <button class="btn-setting" style="background:#f44336;" onclick="handleLogout()">로그아웃</button>
-            </div>
-        </div>
+<div class="container">
+    <header>
+        <h1>강사 타임수</h1>
         
-        <div class="calendar-nav">
-            <button onclick="changeMonth(-1)">◀ 이전 달</button>
-            <h2 id="monthYearDisplay"></h2>
-            <button onclick="changeMonth(1)">다음 달 ▶</button>
+        <div class="month-selector">
+            <button onclick="changeMonth(-1)" class="no-print" title="이전 달">◀</button>
+            <span id="currentMonthTitle">2026년 10월 01일</span>
+            <button onclick="changeMonth(1)" class="no-print" title="다음 달">▶</button>
         </div>
 
-        <p style="text-align: center; margin-top: 5px;">현재 화면 마지막 배차 다음 대기자: <strong id="currentTurn" style="color:#d32f2f; font-size: 18px;"></strong></p>
+        <div class="actions">
+            <button class="btn-print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+            <button class="btn-secondary" onclick="resetCurrentMonth()" class="no-print">현재월 초기화</button>
+            <button class="btn-primary" onclick="saveDataToCloud()">☁️ 클라우드 저장</button>
+        </div>
+    </header>
+
+    <p class="no-print" style="color: #5f6368; font-size: 13px; margin-bottom: 15px;">
+        💡 Firebase(carpro) 클라우드 데이터베이스와 연동되어 있습니다. <b>[클라우드 저장]</b> 버튼을 누르면 서버에 안전하게 저장됩니다.
+    </p>
+
+    <div id="app">데이터를 불러오는 중입니다...</div>
+</div>
+
+<script>
+    let currentYear = 2026;
+    let currentMonth = 10;
+
+    let defaultGroup1 = ["양근식", "서현철", "최경철", "이정복", "안대성", "김홍태", "류은영", "박희탁", "진봉두", "양재훈", "손목윤"];
+    let defaultGroup2 = ["임기석", "김창기", "김종현", "오정무"];
+
+    let group1Instructors = [...defaultGroup1];
+    let group2Instructors = [...defaultGroup2];
+    let timesheetData = {};
+    let wageRates = {};
+
+    function getDaysInMonth(year, month) {
+        const totalDays = new Date(year, month, 0).getDate();
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        let days = [];
+        for (let i = 1; i <= totalDays; i++) {
+            const dateObj = new Date(year, month - 1, i);
+            const dayOfWeekIndex = dateObj.getDay();
+            let type = 'weekday';
+            if (dayOfWeekIndex === 0) type = 'sunday';
+            else if (dayOfWeekIndex === 6) type = 'saturday';
+
+            days.push({ 
+                date: `${i}(${dayNames[dayOfWeekIndex]})`, 
+                type: type 
+            });
+        }
+        return days;
+    }
+
+    const initialTimesheet202610 = {
+        "양근식": [8,8,8,8,8,0,6,8,9,8,9,7,0,0,9,9,8,8,8,8,0,8,9,8,8,7,0,0,0,0,0],
+        "서현철": [9,0,9,9,8,8,8,8,8,0,9,9,11,8,9,0,8,6,6,0,4,0,0,0,7,0,8,0,0,0,0],
+        "최경철": [0,8,8,0,7,8,7,0,8,8,0,7,9,8,0,9,8,0,10,8,9,0,7,8,0,8,8,0,0,0,0],
+        "이정복": [3,4,8,0,0,4,2,4,8,8,0,2,4,0,4,0,0,0,2,4,2,4,4,8,8,2,4,0,0,0,0],
+        "안대성": [0,0,0,7,8,8,8,0,8,6,8,6,8,8,0,0,9,6,8,8,9,0,0,9,6,7,6,0,0,0,0],
+        "김홍태": [8,8,8,8,8,8,8,0,8,8,8,0,8,0,0,0,9,8,8,8,0,0,8,9,8,7,8,0,0,0,0],
+        "류은영": [0,0,8,8,0,0,8,0,8,8,0,0,4,9,0,6,8,8,0,4,8,6,4,8,8,9,4,0,0,0,0],
+        "박희탁": [0,8,8,0,8,8,6,0,6,7,0,8,8,8,0,6,7,0,8,7,8,0,0,8,8,7,8,0,0,0,0],
+        "진봉두": [0,7,8,8,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,7,0,0,0,0],
+        "양재훈": [0,0,0,9,0,0,0,8,8,8,6,0,8,9,7,0,8,6,0,8,8,7,8,8,0,0,8,0,0,0,0],
+        "손목윤": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0,0,0],
+        "임기석": [8,8,8,8,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        "김창기": [0,8,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        "김종현": [0,0,9,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        "오정무": [0,0,9,8,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    };
+
+    function getDocId() {
+        return `timesheet_${currentYear}_${String(currentMonth).padStart(2, '0')}`;
+    }
+
+    async function loadDataFromCloud() {
+        if (!window.firebaseDb) {
+            setTimeout(loadDataFromCloud, 200);
+            return;
+        }
+
+        const { doc, getDoc } = window.firebaseDeps;
+        const docRef = doc(window.firebaseDb, "instructor_timesheets", getDocId());
         
-        <div id="calendar"></div>
+        try {
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                group1Instructors = data.group1 || defaultGroup1;
+                group2Instructors = data.group2 || defaultGroup2;
+                timesheetData = data.timesheet || {};
+                wageRates = data.wages || {};
+            } else {
+                // 데이터가 없으면 기본값 설정
+                group1Instructors = [...defaultGroup1];
+                group2Instructors = [...defaultGroup2];
+                if (currentYear === 2026 && currentMonth === 10) {
+                    timesheetData = JSON.parse(JSON.stringify(initialTimesheet202610));
+                } else {
+                    timesheetData = {};
+                    const daysCount = getDaysInMonth(currentYear, currentMonth).getDate();
+                    [...group1Instructors, ...group2Instructors].forEach(name => {
+                        timesheetData[name] = new Array(daysCount).fill(0);
+                    });
+                }
+                wageRates = {};
+            }
 
-        <div id="detailArea" style="margin-top: 40px;">
-            <h3 style="border-bottom: 2px solid #333; padding-bottom: 5px;">📝 이번 달 배차 상세 내역</h3>
-            <table class="detail-table">
-                <thead>
-                    <tr>
-                        <th style="width: 10%;">날짜</th><th style="width: 15%;">일정</th><th style="width: 10%;">차량</th><th style="width: 15%;">운전원</th><th style="width: 25%;">출발지</th><th style="width: 25%;">목적지</th>
-                    </tr>
-                </thead>
-                <tbody id="detailTableBody"></tbody>
-            </table>
-        </div>
+            // 시급 기본값 설정
+            [...group1Instructors, ...group2Instructors].forEach(name => {
+                if (wageRates[name] === undefined) wageRates[name] = 13000;
+            });
 
-        <!-- 배차 모달 -->
-        <div id="modalOverlay" class="modal-overlay">
-            <div id="modalContent" class="modal-content">
-                <button class="close-btn" onclick="closeModal()">×</button>
-                <h2 id="modalDate"></h2>
-                <div class="form-group"><label>일정 선택:</label><select id="scheduleSelect"><option value="당일">당일</option><option value="당일(서울)">당일 (서울)</option><option value="1박">1박 (2일 소요)</option><option value="2박">2박 (3일 소요)</option><option value="시티투어">시티투어</option><option value="성묘지원">성묘지원</option></select></div>
-                <div class="form-group"><label>차량 선택:</label><select id="vehicleSelect" onchange="toggleBusOptions()"><option value="">차량을 선택하세요</option></select></div>
-                <div id="busOptions" class="form-group hidden"><label><input type="checkbox" id="soloDrive"> <strong>버스 1인 예외 운행</strong></label></div>
-                <div class="form-group"><label>출발지:</label><input type="text" id="departureInput" placeholder="예: 남양주시청"></div>
-                <div class="form-group"><label>목적지:</label><input type="text" id="destinationInput" placeholder="예: 서울역"></div>
-                <div class="button-group"><button id="deleteBtn" class="btn btn-delete hidden" onclick="deleteCurrentDispatch()">삭제</button><button class="btn btn-save" onclick="saveDispatch()">배차 저장</button></div>
-            <div class="form-group" style="margin-top: 15px;">
-                <div class="form-group" style="margin-top: 10px;">
-    <label style="font-weight: bold; font-size: 13px;">거리 (km)</label>
-    <input type="number" id="kmInput" placeholder="예: 50 (가까운 순서 정렬용)" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-</div>
-    <label style="font-weight: bold; font-size: 14px; display: block; margin-bottom: 5px;">👥 배정 운전원 및 선운행 지정</label>
-    <div id="assignedDriversContainer" style="border: 1px solid #ddd; padding: 10px; border-radius: 8px; background: #fff;">
-        <span style="color:#888; font-size:13px;">차량을 선택하면 운전원이 표시됩니다.</span>
-    </div>
-</div>
+            renderApp();
+        } catch (e) {
+            console.error("데이터 로드 실패:", e);
+            renderApp();
+        }
+    }
+
+    async function saveDataToCloud() {
+        if (!window.firebaseDb) {
+            alert("Firebase 연결 중입니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
+
+        const { doc, setDoc } = window.firebaseDeps;
+        const docRef = doc(window.firebaseDb, "instructor_timesheets", getDocId());
+
+        try {
+            await setDoc(docRef, {
+                group1: group1Instructors,
+                group2: group2Instructors,
+                timesheet: timesheetData,
+                wages: wageRates,
+                updatedAt: new Date().toISOString()
+            });
+            alert(`✨ ${currentYear}년 ${currentMonth}월 데이터가 Firebase 클라우드에 안전하게 저장되었습니다!`);
+        } catch (e) {
+            console.error("저장 실패:", e);
+            alert("저장 중 오류가 발생했습니다: " + e.message);
+        }
+    }
+
+    function changeMonth(direction) {
+        currentMonth += direction;
+        if (currentMonth > 12) {
+            currentMonth = 1;
+            currentYear++;
+        } else if (currentMonth < 1) {
+            currentMonth = 12;
+            currentYear--;
+        }
+        loadDataFromCloud();
+    }
+
+    function renderApp() {
+        const paddedMonth = String(currentMonth).padStart(2, '0');
+        document.getElementById('currentMonthTitle').innerText = `${currentYear}년 ${paddedMonth}월 01일`;
+        const daysData = getDaysInMonth(currentYear, currentMonth);
+
+        const app = document.getElementById('app');
+        app.innerHTML = `
+            ${renderTableSection("그룹 1", group1Instructors, daysData, 1)}
+            ${renderTableSection("그룹 2", group2Instructors, daysData, 2)}
+        `;
+    }
+
+    function renderTableSection(title, instructors, daysData, groupNum) {
+        let html = `
+            <div class="section-header">
+                <div class="section-title">${title} (${instructors.length}명)</div>
+                <div class="section-btns no-print">
+                    <button class="btn-add" onclick="addInstructor(${groupNum})">+ 강사 추가</button>
+                    <button class="btn-del-group" onclick="removeInstructorPrompt(${groupNum})">강사 삭제</button>
+                </div>
             </div>
-        </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="date-col">날짜</th>
+                            ${instructors.map(name => `<th>${name}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
 
-        <!-- 운전원 설정 모달 -->
-        <div id="driverModalOverlay" class="modal-overlay">
-            <div id="driverModalContent" class="modal-content" style="width: 400px;">
-                <button class="close-btn" onclick="closeDriverModal()">×</button>
-                <h2>운전원 순번 및 명단 설정</h2>
-                <div class="form-group"><label><strong>적용 시작일 (날짜 선택):</strong></label><input type="date" id="rosterDateInput" onchange="loadRosterForDate()"></div>
-                <div class="form-group"><label><strong>운전원 명단 (엔터로 구분)</strong></label><textarea id="driverListText" rows="12"></textarea></div>
-                <div class="button-group"><button class="btn btn-reset" onclick="resetRoster()">설정 취소</button><button class="btn btn-save" onclick="saveRoster()">명단 저장</button></div>
-            </div>
-        </div>
-    </div>
+        daysData.forEach((day, dayIndex) => {
+            let rowClass = '';
+            if (day.type === 'sunday') rowClass = 'sunday';
+            else if (day.type === 'saturday') rowClass = 'saturday';
 
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
-    <script src="script.js"></script>
+            html += `<tr>
+                <td class="date-col ${rowClass}">${day.date}</td>`;
+            
+            instructors.forEach(name => {
+                if (!timesheetData[name]) timesheetData[name] = new Array(daysData.length).fill(0);
+                const val = timesheetData[name][dayIndex];
+                const isEmpty = (val === 0 || val === '' || isNaN(val));
+                const displayVal = isEmpty ? '' : val;
+                const cellClass = isEmpty ? 'is-empty' : '';
+                
+                html += `<td><input type="number" min="0" max="24" class="${cellClass}" value="${displayVal}" oninput="updateValue('${name}', ${dayIndex}, this)"></td>`;
+            });
+
+            html += `</tr>`;
+        });
+
+        html += `<tr class="summary-row">
+            <td class="date-col">총타임수</td>`;
+        instructors.forEach(name => {
+            const totalHours = (timesheetData[name] || []).reduce((acc, curr) => acc + (Number(curr) || 0), 0);
+            html += `<td>${totalHours}</td>`;
+        });
+        html += `</tr>`;
+
+        html += `<tr class="wage-row">
+            <td class="date-col">시급</td>`;
+        instructors.forEach(name => {
+            const wageVal = wageRates[name] !== undefined ? wageRates[name] : 13000;
+            html += `<td><input type="text" value="${Number(wageVal).toLocaleString()}" onfocus="this.value=this.value.replace(/,/g,'')" onblur="updateWage('${name}', this)" style="font-weight:bold; text-align:center;"></td>`;
+        });
+        html += `</tr>`;
+
+        html += `<tr class="total-pay-row">
+            <td class="date-col">총급여액</td>`;
+        instructors.forEach(name => {
+            const totalHours = (timesheetData[name] || []).reduce((acc, curr) => acc + (Number(curr) || 0), 0);
+            const totalPay = totalHours * (wageRates[name] || 0);
+            html += `<td>${totalPay.toLocaleString()}원</td>`;
+        });
+        html += `</tr>`;
+
+        html += `</tbody></table></div>`;
+        return html;
+    }
+
+    function updateValue(name, dayIndex, inputElem) {
+        if (!timesheetData[name]) {
+            timesheetData[name] = new Array(getDaysInMonth(currentYear, currentMonth).length).fill(0);
+        }
+        
+        const val = inputElem.value;
+        timesheetData[name][dayIndex] = val === '' ? 0 : Number(val);
+
+        if (val === '' || Number(val) === 0) {
+            inputElem.classList.add('is-empty');
+        } else {
+            inputElem.classList.remove('is-empty');
+        }
+    }
+
+    function updateWage(name, inputElem) {
+        const rawVal = inputElem.value.replace(/[^0-9]/g, '');
+        const num = rawVal === '' ? 0 : Number(rawVal);
+        wageRates[name] = num;
+        inputElem.value = num.toLocaleString();
+        renderApp();
+    }
+
+    function addInstructor(groupNum) {
+        const name = prompt("추가할 강사 이름을 입력하세요:");
+        if (!name || name.trim() === "") return;
+        const trimmed = name.trim();
+
+        if (group1Instructors.includes(trimmed) || group2Instructors.includes(trimmed)) {
+            alert("이미 존재하는 강사 이름입니다.");
+            return;
+        }
+
+        const daysCount = getDaysInMonth(currentYear, currentMonth).length;
+        timesheetData[trimmed] = new Array(daysCount).fill(0);
+        wageRates[trimmed] = 13000;
+
+        if (groupNum === 1) {
+            group1Instructors.push(trimmed);
+        } else {
+            group2Instructors.push(trimmed);
+        }
+
+        renderApp();
+        alert(`${trimmed} 강사가 추가되었습니다. [클라우드 저장]을 눌러 서버에 반영하세요.`);
+    }
+
+    function removeInstructorPrompt(groupNum) {
+        const list = groupNum === 1 ? group1Instructors : group2Instructors;
+        if (list.length === 0) {
+            alert("삭제할 강사가 없습니다.");
+            return;
+        }
+
+        const nameToRemove = prompt(`[그룹 ${groupNum}] 삭제할 강사 이름을 정확히 입력하세요:\n\n현재 강사 목록: ${list.join(', ')}`);
+        if (!nameToRemove || nameToRemove.trim() === "") return;
+        const target = nameToRemove.trim();
+
+        if (!list.includes(target)) {
+            alert("해당 이름의 강사가 이 그룹에 존재하지 않습니다.");
+            return;
+        }
+
+        if (confirm(`정말 '${target}' 강사를 삭제하시겠습니까?`)) {
+            if (groupNum === 1) {
+                group1Instructors = group1Instructors.filter(n => n !== target);
+            } else {
+                group2Instructors = group2Instructors.filter(n => n !== target);
+            }
+            renderApp();
+            alert(`${target} 강사가 삭제되었습니다. [클라우드 저장]을 눌러 서버에 반영하세요.`);
+        }
+    }
+
+    function resetCurrentMonth() {
+        if (confirm(`${currentYear}년 ${currentMonth}월 데이터를 초기화하시겠습니까?`)) {
+            group1Instructors = [...defaultGroup1];
+            group2Instructors = [...defaultGroup2];
+            const daysCount = getDaysInMonth(currentYear, currentMonth).length;
+            timesheetData = {};
+            wageRates = {};
+            [...group1Instructors, ...group2Instructors].forEach(name => {
+                timesheetData[name] = new Array(daysCount).fill(0);
+                wageRates[name] = 13000;
+            });
+            renderApp();
+            alert("초기화되었습니다. [클라우드 저장]을 눌러 서버에 반영하세요.");
+        }
+    }
+
+    // 파이어베이스 준비 완료 시 데이터 로드 실행
+    window.addEventListener('firebase-ready', () => {
+        loadDataFromCloud();
+    });
+</script>
+
 </body>
 </html>
